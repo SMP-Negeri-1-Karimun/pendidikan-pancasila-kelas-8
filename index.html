@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAS Pendidikan Pancasila 2025/2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { background-color: #f3f4f6; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // DATA 50 SOAL DIEKSTRAK DARI PDF
+        // Note: Kunci jawaban (correct) diisi berdasarkan konteks sejarah/PKN secara umum.
+        const QUESTIONS = [
+            { id: 1, text: "Organisasi pertama kali di Indonesia yang mengenai pendidikan dan pengajaran adalah", options: { a: "Sumpah Pemuda", b: "Budi Utomo", c: "Indische Partij", d: "Pramuka" }, correct: "b" },
+            { id: 2, text: "Siapakah pendiri Budi Utomo ?", options: { a: "Dr. Soepomo", b: "Dr. Soetomo", c: "Dr. Wahidin Sudirohusodo", d: "Dr. Tirto Agung" }, correct: "b" },
+            { id: 3, text: "Organisasi Budi Utomo didirakan para mahasiwa STOVIA di Jakarta pada tanggal ...", options: { a: "2 Mei 1908", b: "20 Mei 1908", c: "20 Mei 1928", d: "28 Mei 1928" }, correct: "b" },
+            { id: 4, text: "Politik balas budi yang diberikan pihak Belanda ke Indonesia adalah ...", options: { a: "Irigasi, transmigrasi, edukasi", b: "Irigasi, transportasi, edukasi", c: "Transportasi, pendidikan, pengairan", d: "Transmigrasi, pendidikan, perkebunan" }, correct: "a" },
+            { id: 5, text: "Tokoh yang mengusulkan kebijakan politik etis pada tahun 1901 sebagai balas budi terhadap bangsa Indonesia adalah ...", options: { a: "L. Vitalis", b: "Van Deventer", c: "Van De Bosch", d: "E. F. E. Douwes Dekker" }, correct: "b" },
+            { id: 6, text: "Kebijakan politik etis/balas budi yang dilaksanakan Belanda memberi dampak positif bagi bangsa Indonesia. Pengaruh yang paling menonjol dalam mendorong tumbuhnya sebamangat kebangsaan yaitu", options: { a: "Irigasi", b: "Edukasi", c: "Emigrasi", d: "Demokrasi" }, correct: "b" },
+            { id: 7, text: "Kebangkitan Nasional 1908 ditandai dengan 2 peristiwa penting", options: { a: "Berdirinya organisasi Budi Utomo dan Indische Partiij", b: "Berdirinya organisasi Budi Utomo dan Ikrar sumpah pemuda", c: "Berdirinya sakrekat dagang islam dan Indische Partiij", d: "Berdirinya organisasi Indische Patiij dan Ikrar sumpah pemuda" }, correct: "b" },
+            { id: 8, text: "Apa makna dari peristiwa Kebangkitan Nasional, yaitu", options: { a: "Mengenang kembali semangat perjuangan bangsa Indonesia tempo dulu untuk mengisi kemerdekaan dengan pembangunan disegala bidang termasuk pembangunan kesejahteraan sosial", b: "Mengenang tokoh-tokoh didunia Pendidikan di Indonesia", c: "Mengenang semangat nilai-nilai religious bangsa Indonesia di awal kemerdekaan", d: "Makna dari peristiwa ini membuat kita lebih peka lagi terhadap kondisi sosial" }, correct: "a" },
+            { id: 9, text: "Kepanjangan dari VOC adalah", options: { a: "Vereenigde Oostindische Compagnie", b: "Vereenigde Oost Colombia", c: "Vereenigde Oostindische Colombia", d: "Vereenigde Oost Compagnie" }, correct: "a" },
+            { id: 10, text: "Berapa lamakah penjajah Belanda menjajah bangsa Indonesia ?", options: { a: "310 tahun", b: "350 tahun", c: "300 tahun", d: "30 tahun" }, correct: "b" },
+            { id: 11, text: "Perhatikan pernyataan-pernyataan berikut!\n➤ Perasaan senasib\n➤ Kebangkitan Nasional\n➤ Sumpah Pemuda\n➤ Proklamasi Kemerdekaan\nBerdasarkan penyataan-pernyataan berikut merupakan ...", options: { a: "Sikap positif yang berkaitan dengan nilai-nilai kebangsaan", b: "Tahap-tahap pembinaan persatuan bangsa Indonesia", c: "Nilai-nilai semangat sumpah pemuda", d: "Kedudukan UUD NRI Tahun 1945" }, correct: "b" },
+            { id: 12, text: "Di bawah ini merupakan contoh sikap dalam kehidupan sehari-hari yang mencerminkan semangat Kebangkitan Nasional 1908, adalah", options: { a: "Bekerjasama dengan teman saat ujian", b: "Membantu teman yang sedang kesusahan dan meminta imbalan", c: "Bangga menjadi warga negara Indonesia dan menggunakan produk dalam negeri di kehidupan sehari-hari", d: "Semangat membantu agar diberi uang jajan" }, correct: "c" },
+            { id: 13, text: "Sebagai siwa yang memahami dan menerapkan nilai-nilai Kebangkitan Nasional, apa yang harus kita lakukan saat menemukan berita di sosial media yang simpang siur atau masih tidak jelas kebernarannya", options: { a: "Menyebarkannya", b: "Diam saja", c: "Berusaha mencari kebenarannya", d: "Bersikap tidak peduli" }, correct: "c" },
+            { id: 14, text: "Contoh Perwujudan nilai-nilai semangat kebangkitan nasional pada masa sekarang ini, kecuali", options: { a: "Mengutamakan persatuan di lingkungan sekolah dengan saling bekerja sama menemukan masalah yang terjadi di kelas", b: "Menumbuhkan rasa saling tolong menolong dengan teman lain tanpa membeda-bedakan latar belakang", c: "Mengunjungi Negara-negara eropa", d: "Menunjukkan sikap yang mencerminkan semangat Bhinneka Tunggal Ika" }, correct: "c" },
+            { id: 15, text: "Sikap berani dan pantang menyerah seseorang yang ditunjukkan dengan rela berkorban untuk bangsa dan Negara demi keutuhan Negara disebut sebagai", options: { a: "Patriotisme", b: "Chauvenisme", c: "Nasionalisme", d: "Cinta Tanah Air" }, correct: "a" },
+            { id: 16, text: "Pada tanggal berapakah sumpah pemuda lahir ?", options: { a: "27 oktober 1928", b: "28 oktober 1929", c: "28 oktober 1928", d: "28 oktober 1926" }, correct: "c" },
+            { id: 17, text: "Amir syarifudin adalah tokoh dalam kongres sumpah pemuda berasal dari", options: { a: "Jong Sumatra", b: "Jong Ambon", c: "Jong minahasa", d: "Jong java" }, correct: "a" },
+            { id: 18, text: "Salah satu tokoh yang lahir dari Jong Minahasa adalah", options: { a: "Sam Ratulangi", b: "Moh. Hatta", c: "Moh. Yamin", d: "Bahder Johan" }, correct: "a" },
+            { id: 19, text: "Siapakah pahlawan di era sumpah pemuda yang menciptakan hingga mengumandangkan nyanyian lagu kebangsaan nasional", options: { a: "Chairul Anwar", b: "Wr. Supratman", c: "M.Yamin", d: "Amir Syarifudin" }, correct: "b" },
+            { id: 20, text: "Beberapa tokoh sumpah pemuda diantaranya, kecuali", options: { a: "Amir syarifudin", b: "M.Yamin", c: "Djoko Marsaid", d: "Soeharto" }, correct: "d" },
+            { id: 21, text: "Siapakah ketua panitia kongres pemuda II yang memimpin jalannya Upacara Sumpah Pemuda?", options: { a: "Sugondo Djojopuspito", b: "Moh. Hatta", c: "Moh. Yamin", d: "Bahder Johan" }, correct: "a" },
+            { id: 22, text: "Lagu Kebangsaan \"Indonesia Raya\" pertama kali diperdengarkan menggunakan biola tanpa teks oleh tokoh berbakat bernama.", options: { a: "Soegondo Joyo Puspito", b: "Wr. Supratman", c: "M.Yamin", d: "Amir Syarifudin" }, correct: "b" },
+            { id: 23, text: "Berdoa sebelum belajar merupakan contoh sikap positif nilai kebangsaan ..", options: { a: "Nilai religius", b: "Nilai kemanusiaan", c: "Nilai demokrasi", d: "Nilai kesamaan derajat" }, correct: "a" },
+            { id: 24, text: "Bermusyawarah dalam pemilihan ketua kelas merupakan contoh sikap positif nilai kebangsaan ...", options: { a: "Nilai religius", b: "Nilai kemanusiaan", c: "Nilai demokrasi", d: "Nilai kesamaan derajat" }, correct: "c" },
+            { id: 25, text: "Kami putra dan puri Indonesia menjunjung Bahasa persatuan, Bahasa Indonesia", options: { a: "Para pemuda Bersatu sebagai bangsa Indonesia", b: "Perasaan kebangsaan menjiwai para pemuda", c: "Para pemuda ingin muwujudkan kemerdekaan", d: "Bahasa Indonesia diakui sebagai Bahasa persatuan" }, correct: "d" },
+            { id: 26, text: "Sebagai seorang pelajar hendaknya mampu menerapkan salah satu aspek sumpah pemuda, yaitu suatu bangsa dengan cara...", options: { a: "Menjaga keutuhan wilayah Indonesia menjadi relawan", b: "Berteman dengan siapa aja tanpa membedakan suku, agama dan budaya", c: "Menggunakan Bahasa Indonesia dengan baik dan benar", d: "Tidak menyebarkan hoax yang memicu perpecahan wilayah Indonesia" }, correct: "c" },
+            { id: 27, text: "Contoh penerapan perilaku siswa dalam menerapkan sumpah pemuda", options: { a: "Membuang sampah pada tempatnya", b: "Intoleransi", c: "Tidak empati terhadap sara", d: "Bangga dengan menggunakan produk dari luar negeri" }, correct: "a" },
+            { id: 28, text: "Berapakah anggota panitia inti Kongres Pemuda ?", options: { a: "8 anggota", b: "9 anggota", c: "10 anggota", d: "11 anggota" }, correct: "c" },
+            { id: 29, text: "Pahlawan Indonesia yang menjadi Komandan Tentara Keamanan Rakyat (TKR) Sunda Kecil dan mendapat gelar Bintang Mahaputra serta Brigjen TNI adalah", options: { a: "WR. Supratman", b: "Chairil Anwar", c: "Wolter Mongisidi", d: "I Gusti Ngurah Rai" }, correct: "d" },
+            { id: 30, text: "Setelah berdirinya Budi Utomo mendorong bermunculan organisasi pemuda seperti Trikoro Dharmo (TK). Pendiri Trikoro Dharmo adalah", options: { a: "R. Satiman Wiryosanjoyo", b: "Muhammad Yamin", c: "Sunario", d: "Senduk" }, correct: "a" },
+            { id: 31, text: "Identitas nasional merupakan ...", options: { a: "Jati diri bangsa", b: "Ciri khas yang menjadi penanda suatu bangsa", c: "Kebudayaan yang terbentuk dari niali-nilai masyarakat yang tumbuh", d: "Semua benar" }, correct: "d" },
+            { id: 32, text: "Upaya pelestarian dan pemajuan budaya nasional diantara nya adalah, kecuali ...", options: { a: "Pembelajaran dan penerapan", b: "Sosialisasi dan promosi", c: "Adaptasi", d: "Semangat nasionalisme" }, correct: "c" },
+            { id: 33, text: "Salah satu contoh budaya lokal di Indonesia yang sudah mendapatkan hak paten dari UNESCO menjadi warisan budaya nasional adalah", options: { a: "Batik", b: "Tanjak", c: "Kampung Tenun samarinda", d: "Uang panai" }, correct: "a" },
+            { id: 34, text: "UNESCO adalah", options: { a: "Organisasi Buruh Internasional", b: "Organisasi Pariwisata Dunia", c: "Organisasi Pendidikan, keilmuan, dan kebudayaan", d: "Organisasi Hak atas kekayaan intelektual" }, correct: "c" },
+            { id: 35, text: "Budaya nasional merupakan...", options: { a: "Budaya dari negara lain yang di Impor", b: "Gabungan dari budaya asing dan lokal", c: "Hasil dari budaya asing dan lokal", d: "Hasil dari perpaduan budaya lokal yang diakui sebagai identitas bangsa" }, correct: "d" },
+            { id: 36, text: "Yang tidak termasuk jati diri bangsa Indonesia adalah....", options: { a: "Sopan Santun", b: "Gotong Royong", c: "Individualisme", d: "Toleransi" }, correct: "c" },
+            { id: 37, text: "Berdasarkan Keputusan Presiden No. 33 Tahun 2009 pada tanggal berapakah Memperingati HARI BATIK NASIONAL", options: { a: "1 Mei", b: "2 Mei", c: "28 Oktober", d: "2 Oktober" }, correct: "d" },
+            { id: 38, text: "Selain batik, Keragaman budaya sebagai alat mempersatu bangsa diantaranya adalah", options: { a: "Tari zapin Melayu", b: "Semangat Gotong Royong", c: "Lakse goreng", d: "Semua benar" }, correct: "d" },
+            { id: 39, text: "Upaya apa saja yang dapat dilakukan dalam menghadapi tantangan di Era globalisasi, kecuali ...", options: { a: "Mengikuti festival budaya Internasional", b: "Mempublikasikan konten-konten budaya nasional", c: "Mendapatkan hak paten oleh UNESCO", d: "Adaptasi" }, correct: "d" },
+            { id: 40, text: "Bunyi pasal 32 ayat 1 UUD NRI Tahun 1945 adalah ...", options: { a: "Negara memajukan kebudayaan nasional Indonesia di tengah peradaban dunia dengan menjamin kebebasan masyarakat dalam memelihara dan mengembangkan nilai-nilai budayanya", b: "Menghormati dan memelihara bahasa daerah sebagai kekayaan budaya nasional", c: "Kebudayaan adalah segala sesuatu yang berkaitan dengan cipta, rasa, karsa, dan hasil karya masyarakat", d: "Pemajuan Kebudayaan membuktikan bahwa pemerintah memiliki perhatian khusus terhadap upaya-upaya peningkatan kebudayaan di Indonesia" }, correct: "a" },
+            { id: 41, text: "Sebagai generasi muda kita harus berpartisipasi dalam mewujudkan dunia maya yang kondusif dan produktif. Salah satu cara yang dapat kita lakukan adalah", options: { a: "menerapkan etika berinternet", b: "membatasi penggunaan media sosial", c: "memberikan komentar yang provokatif", d: "menyebarluaskan informasi palsu/hoaks" }, correct: "a" },
+            { id: 42, text: "Kita perlu berpikir terlebih dahulu sebelum mengunggah sebuah konten, karena konten yang kita unggah akan dengan mudah tersebar dan beranak-pinak tanpa bisa dikendalikan. Dengan demikian kita telah menerapkan salah satu prinsip umum netiket yaitu", options: { a: "think before posting", b: "saring sebelum sharing", c: "berhati-hati dalam forward konten", d: "memastikan bukan berita hoaks" }, correct: "a" },
+            { id: 43, text: "Etika berinternet harus diterapkan saat berselancar di dunia maya. Berikut ini yang tidak termasuk etika dalam berinternet adalah ...", options: { a: "membalas pesan pribadi di forum umum", b: "memilih konten yang bermanfaat dan produktif", c: "menulis atau memposting informasi yang valid dan benar", d: "menulis komentar dengan tepat dan menggunakan bahasa yang sopan" }, correct: "a" },
+            { id: 44, text: "Etika berinternet sangat penting diterapkan dalam berkomunikasi di media sosial. Mengembangkan literasi digital yang sesuai dengan etika dan Pancasila dapat dilakukan dengan", options: { a: "melakukan cyber bullying kepada orang lain", b: "mengabaikan privasi dan hak cipta orang lain", c: "mencari dan menyebarkan konten yang mengandung unsur kebencian dan provokasi", d: "memiliki kesadaran untuk menyebarluaskan informasi yang positif dan bermanfaat bagi orang lain" }, correct: "d" },
+            { id: 45, text: "Perhatikan pernyataan berikut ini!\n(1) Foto hasil editan\n(2) Tidak ada penulis berita\n(3) Judul umumnya provokatif\n(4) Nama dan situs media jelas\nBerita bohong dapat diidentifikasi dari ciri-ciri yang ditunjukkan oleh pernyataan nomor ....", options: { a: "(1), (2), dan (3)", b: "(1), (2), dan (4)", c: "(1), (3), dan (4)", d: "(2), (3), dan (4)" }, correct: "a" },
+            { id: 46, text: "Mayes dan Fowler mengungkapkan bahwa literasi digital terdiri dari tiga level, yaitu digital competence, digital usage, dan digital transformation. Yang dimaksud dengan digital usage adalah kemampuan untuk", options: { a: "menulis atau memposting informasi yang valid dan benar", b: "memanfaatkan informasi yang sudah dipilah dan diolah untuk tujuan produktif", c: "memilih dan mengolah saat berhadapan dengan berbagai informasi dalam dunia digital", d: "melakukan inovasi menghasilkan metode atau produk baru yang bermanfaat bagi masyarakat dengan memanfaatkan tehnologi digital" }, correct: "b" },
+            { id: 47, text: "Pada konteks kemajuan bangsa, literasi digital memiliki peran yang sangat penting. Untuk memperkukuh persatuan dan kesatuan bangsa Indonesia. Upaya yang dapat dilakukan dengan memanfaatkan literasi digital adalah", options: { a: "menyebarluaskan konten yang menghasut dan berpotensi memicu konflik", b: "menjauhi teknologi dan media sosial agat tidak terlibat dalam konflik online", c: "mengabaikan perbedaan pendapat dan keyakinan untuk menciptakan kesatuan", d: "memperkuat narasi kebangsaan dengan membagikan konten yang menunjukkan keragaman Indonesia" }, correct: "d" },
+            { id: 48, text: "Literasi digital sangat bermanfaat jika diterapkan di lingkungan madrasah. Berikut ini yang bukan termasuk penerapan literasi digital di madrasah adalah", options: { a: "menggunakan internet untuk mencari sumber belajar terpercaya", b: "melakukan promosi penjualan barang dagangan melalui media sosial", c: "melakukan pencarian informasi tentang pelajaran menggunakan browser", d: "memaksimalkan penggunaan media sosial untuk berkomunikasi dengan guru atau teman" }, correct: "b" },
+            { id: 49, text: "Contoh penerapan literasi digital yang benar, kecuali", options: { a: "Penggunaan media sosial untuk saran promosi penjualan", b: "Memakai aplikasi meeting untuk rapat", c: "Menggunakan media internet untuk penggalangan dana atau donasi", d: "Menyindir teman dengan sengaja melalui postingan" }, correct: "d" },
+            { id: 50, text: "Literasi digital dapat dimanfaatkan dalam berbagai sektor. Di sektor pendidikan, manfaat yang diperoleh dari penerapan literasi digital adalah ....", options: { a: "meningkatkan biaya pendidikan", b: "mengurangi waktu pembelajaran", c: "meningkatkan kualitas dan efisiensi proses belajar mengajar", d: "mengurangi keterlibatan siswa dalam proses belajar mengajar" }, correct: "c" }
+        ];
+
+        function App() {
+            // State Application
+            const [stage, setStage] = useState('login'); // 'login', 'exam', 'finished'
+            const [student, setStudent] = useState(() => JSON.parse(localStorage.getItem('sas_student')) || { nama: '', jk: '', kelas: '', token: '' });
+            const [answers, setAnswers] = useState(() => JSON.parse(localStorage.getItem('sas_answers')) || {});
+            const [cheats, setCheats] = useState(() => parseInt(localStorage.getItem('sas_cheats')) || 0);
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [resultMessage, setResultMessage] = useState("");
+            
+            // State untuk Custom Modal menggantikan alert() dan confirm()
+            const [modal, setModal] = useState({ isOpen: false, type: 'alert', title: '', message: '', action: null });
+
+            const soalRefs = useRef([]);
+
+            // ==== CONFIGURATION URL APP SCRIPT DISINI ====
+            const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTjW6wyl3qOLycjrtYxl6eSRStpUgHLyfmcEq0BWZNu1bkUkQ9lx7xnbyta8dKln44/exec"; 
+            // =============================================
+
+            // SINKRONISASI KE LOCALSTORAGE
+            useEffect(() => {
+                localStorage.setItem('sas_student', JSON.stringify(student));
+                localStorage.setItem('sas_answers', JSON.stringify(answers));
+                localStorage.setItem('sas_cheats', cheats.toString());
+            }, [student, answers, cheats]);
+
+            // SISTEM ANTI CURANG (DETEKSI PINDAH TAB/APLIKASI)
+            useEffect(() => {
+                const handleVisibilityChange = () => {
+                    if (document.hidden && stage === 'exam') {
+                        setCheats(prev => {
+                            const newCheats = prev + 1;
+                            setModal({
+                                isOpen: true,
+                                type: 'alert',
+                                title: '🚨 PERINGATAN KECURANGAN! 🚨',
+                                message: `Anda terdeteksi berpindah layar/aplikasi.\nKecurangan tercatat: ${newCheats} kali.\nSetiap pelanggaran akan mengurangi nilai akhir Anda.`,
+                                action: null
+                            });
+                            return newCheats;
+                        });
+                    }
+                };
+
+                document.addEventListener('visibilitychange', handleVisibilityChange);
+                window.addEventListener('blur', handleVisibilityChange); // Fallback
+
+                return () => {
+                    document.removeEventListener('visibilitychange', handleVisibilityChange);
+                    window.removeEventListener('blur', handleVisibilityChange);
+                };
+            }, [stage]);
+
+            // LOGIN HANDLER
+            const handleLogin = (e) => {
+                e.preventDefault();
+                if (student.token === 'PP2026') {
+                    setStage('exam');
+                } else {
+                    setModal({ isOpen: true, type: 'alert', title: 'Token Salah', message: 'Silakan masukkan token yang valid.', action: null });
+                }
+            };
+
+            // JAWABAN HANDLER
+            const handleAnswer = (questionId, optionKey) => {
+                setAnswers(prev => ({ ...prev, [questionId]: optionKey }));
+            };
+
+            // SCROLL NAVIGASI
+            const scrollToSoal = (index) => {
+                setCurrentQuestion(index);
+                if(soalRefs.current[index]){
+                    soalRefs.current[index].scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            };
+
+            // SUBMIT HANDLERS
+            const handleSubmitClick = () => {
+                if(Object.keys(answers).length < QUESTIONS.length) {
+                    setModal({ isOpen: true, type: 'confirm', title: 'Konfirmasi', message: 'Ada soal yang belum dijawab! Yakin ingin mengumpulkan?', action: executeSubmit });
+                } else {
+                    setModal({ isOpen: true, type: 'confirm', title: 'Konfirmasi', message: 'Yakin ingin mengumpulkan jawaban?', action: executeSubmit });
+                }
+            };
+
+            const executeSubmit = async () => {
+                setModal({ isOpen: false, type: 'alert', title: '', message: '', action: null });
+                setIsSubmitting(true);
+                
+                // Kalkulasi Nilai
+                let correctCount = 0;
+                QUESTIONS.forEach(q => {
+                    if (answers[q.id] === q.correct) correctCount++;
+                });
+                
+                // Perhitungan: (Benar x 2) - (Kecurangan x 2)
+                let finalScore = (correctCount * 2) - (cheats * 2);
+                if(finalScore < 0) finalScore = 0; // Nilai tidak boleh minus (opsional)
+
+                const payload = {
+                    nama: student.nama,
+                    jenisKelamin: student.jk,
+                    kelas: student.kelas,
+                    token: student.token,
+                    jumlahBenar: correctCount,
+                    jumlahKecurangan: cheats,
+                    totalNilai: finalScore,
+                    jawaban: answers
+                };
+
+                try {
+                    // Mengirim POST request. Menggunakan text/plain agar tidak diblokir CORS preflight.
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', 
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8',
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    // Clear local storage after success
+                    localStorage.removeItem('sas_student');
+                    localStorage.removeItem('sas_answers');
+                    localStorage.removeItem('sas_cheats');
+                    
+                    setResultMessage("Jawaban berhasil dikirim! Silakan tinggalkan ruangan dengan tertib.");
+                    setStage('finished');
+                } catch (error) {
+                    setModal({ isOpen: true, type: 'alert', title: 'Error Koneksi', message: 'Terjadi kesalahan koneksi internet. Silakan coba klik Kirim lagi.', action: null });
+                    console.error(error);
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            // ---- RENDER COMPONENTS ----
+            const ModalUI = () => {
+                if (!modal.isOpen) return null;
+                return (
+                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm w-full">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800">{modal.title}</h3>
+                            <p className="text-gray-600 mb-6 whitespace-pre-line">{modal.message}</p>
+                            <div className="flex justify-end gap-3">
+                                {modal.type === 'confirm' && (
+                                    <button onClick={() => setModal({ ...modal, isOpen: false })} className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-medium">Batal</button>
+                                )}
+                                <button 
+                                    onClick={() => {
+                                        if (modal.action) modal.action();
+                                        else setModal({ ...modal, isOpen: false });
+                                    }} 
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium"
+                                >
+                                    {modal.type === 'confirm' ? 'Ya, Lanjutkan' : 'Tutup'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            };
+
+            // ---- RENDER LOGIN PAGE ----
+            if (stage === 'login') {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-4 relative">
+                        <ModalUI />
+                        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border-t-4 border-blue-600">
+                            <div className="flex justify-center mb-4">
+                                <img src="https://i.ibb.co.com/TxwtMFDD/Screenshot-2024-08-29-125749.png" alt="Logo SMPN 1 Karimun" className="h-24 object-contain" />
+                            </div>
+                            <div className="text-center mb-6">
+                                <h1 className="text-xl font-bold text-gray-800">SUMATIF AKHIR SEMESTER</h1>
+                                <h2 className="text-md font-semibold text-gray-700">TAHUN PELAJARAN 2025/2026</h2>
+                                <h3 className="text-sm font-medium text-gray-600">SMP NEGERI 1 KARIMUN</h3>
+                                <p className="text-blue-600 font-bold mt-2 border border-blue-200 inline-block px-3 py-1 rounded bg-blue-50">STUDI: PENDIDIKAN PANCASILA</p>
+                            </div>
+                            
+                            <form onSubmit={handleLogin} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Nama Murid</label>
+                                    <input required type="text" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                        value={student.nama} onChange={e => setStudent({...student, nama: e.target.value.toUpperCase()})} />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Jenis Kelamin</label>
+                                    <select required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        value={student.jk} onChange={e => setStudent({...student, jk: e.target.value})}>
+                                        <option value="">-- Pilih Jenis Kelamin --</option>
+                                        <option value="L">Laki-Laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Kelas</label>
+                                    <select required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                        value={student.kelas} onChange={e => setStudent({...student, kelas: e.target.value})}>
+                                        <option value="">-- Pilih Kelas --</option>
+                                        {[1,2,3,4,5,6,7,8].map(num => (
+                                            <option key={num} value={`8.${num}`}>8.{num}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Token Ujian</label>
+                                    <input required type="text" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan Token"
+                                        value={student.token} onChange={e => setStudent({...student, token: e.target.value})} />
+                                    <p className="text-xs text-gray-500 mt-1">Hanya bisa dimulai dengan token yang benar.</p>
+                                </div>
+                                
+                                <button type="submit" className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    Mulai Ujian
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ---- RENDER FINISHED PAGE ----
+            if (stage === 'finished') {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-4">
+                        <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
+                            <div className="flex justify-center mb-6">
+                                <img src="https://i.ibb.co.com/TxwtMFDD/Screenshot-2024-08-29-125749.png" alt="Logo SMPN 1 Karimun" className="h-24 object-contain" />
+                            </div>
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">Ujian Selesai!</h2>
+                            <p className="text-gray-600 mb-6">{resultMessage}</p>
+                            <p className="text-sm text-gray-500 mb-4">Terima kasih {student.nama}, jawaban Anda sudah tersimpan dengan aman.</p>
+                            <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Tutup Halaman</button>
+                        </div>
+                    </div>
+                );
+            }
+
+            // ---- RENDER EXAM PAGE ----
+            return (
+                <div className="min-h-screen flex flex-col md:flex-row max-w-7xl mx-auto relative">
+                    <ModalUI />
+                    {/* Header Mobile - Peringatan */}
+                    <div className="md:hidden bg-red-100 p-2 text-center text-red-800 text-sm font-bold sticky top-0 z-50">
+                        🚨 DILARANG PINDAH APLIKASI/LAYAR 🚨
+                    </div>
+
+                    {/* MAIN CONTENT SOAL */}
+                    <div className="flex-1 p-4 md:p-6 h-screen overflow-y-auto scroll-smooth pb-32 md:pb-6" style={{ scrollBehavior: 'smooth' }}>
+                        <div className="flex justify-center mb-6">
+                            <img src="https://i.ibb.co.com/TxwtMFDD/Screenshot-2024-08-29-125749.png" alt="Logo SMPN 1 Karimun" className="h-20 object-contain" />
+                        </div>
+                        <div className="bg-white p-4 rounded-lg shadow mb-6 border-l-4 border-blue-500">
+                            <h2 className="font-bold text-lg">{student.nama} - Kelas {student.kelas}</h2>
+                            <p className="text-sm text-gray-600">Pendidikan Pancasila | Total: {QUESTIONS.length} Soal</p>
+                            {cheats > 0 && <p className="text-sm text-red-600 font-bold mt-2">Kecurangan tercatat: {cheats} kali</p>}
+                        </div>
+
+                        <div className="space-y-6">
+                            {QUESTIONS.map((q, index) => (
+                                <div 
+                                    key={q.id} 
+                                    id={`soal-${index}`}
+                                    ref={el => soalRefs.current[index] = el}
+                                    className={`bg-white p-6 rounded-lg shadow-sm border ${currentQuestion === index ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-200'}`}
+                                >
+                                    <div className="flex gap-4">
+                                        <div className="font-bold text-lg">{index + 1}.</div>
+                                        <div className="flex-1">
+                                            <p className="text-gray-800 mb-4 whitespace-pre-line">{q.text}</p>
+                                            <div className="space-y-2">
+                                                {Object.entries(q.options).map(([key, value]) => (
+                                                    <label key={key} className={`flex items-start p-3 border rounded cursor-pointer transition-colors ${answers[q.id] === key ? 'bg-blue-50 border-blue-400' : 'hover:bg-gray-50 border-gray-200'}`}>
+                                                        <input 
+                                                            type="radio" 
+                                                            name={`question-${q.id}`} 
+                                                            value={key}
+                                                            checked={answers[q.id] === key}
+                                                            onChange={() => handleAnswer(q.id, key)}
+                                                            className="mt-1 mr-3 h-4 w-4 text-blue-600" 
+                                                        />
+                                                        <span className="text-sm text-gray-700"><span className="font-semibold uppercase mr-2">{key}.</span> {value}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-8 flex justify-end mb-20 md:mb-0">
+                            <button 
+                                onClick={handleSubmitClick} 
+                                disabled={isSubmitting}
+                                className={`px-8 py-3 rounded-lg font-bold text-white shadow-lg transition-transform hover:scale-105 ${isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                            >
+                                {isSubmitting ? 'Mengirim Data...' : 'KIRIM JAWABAN SEKARANG'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* SIDEBAR NAVIGASI SOAL */}
+                    <div className="w-full md:w-80 bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.1)] p-4 flex flex-col h-64 md:h-screen fixed md:sticky bottom-0 md:top-0 z-40 border-t md:border-t-0 border-gray-200">
+                        <div className="hidden md:block mb-4 text-center p-3 bg-red-100 text-red-800 rounded-lg text-sm font-bold border border-red-300 shadow-sm">
+                            🚨 DILARANG PINDAH LAYAR/TAB<br/>Kecurangan akan mengurangi nilai!
+                        </div>
+                        
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="font-bold text-gray-700">Navigasi Soal</h3>
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-bold">
+                                Dijawab: {Object.keys(answers).length}/{QUESTIONS.length}
+                            </span>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto hide-scrollbar">
+                            <div className="grid grid-cols-5 gap-2">
+                                {QUESTIONS.map((q, index) => {
+                                    const isAnswered = answers[q.id] !== undefined;
+                                    const isCurrent = currentQuestion === index;
+                                    return (
+                                        <button 
+                                            key={q.id}
+                                            onClick={() => scrollToSoal(index)}
+                                            className={`h-10 w-full rounded flex items-center justify-center text-sm font-semibold border transition-all
+                                                ${isAnswered ? 'bg-green-500 text-white border-green-600' : 'bg-gray-100 text-gray-600 border-gray-300'}
+                                                ${isCurrent ? 'ring-2 ring-offset-1 ring-blue-500' : ''}
+                                            `}
+                                        >
+                                            {index + 1}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        
+                        {/* Mobile Submit Button di Navigasi */}
+                        <div className="md:hidden mt-4">
+                             <button 
+                                onClick={handleSubmitClick} 
+                                disabled={isSubmitting}
+                                className="w-full py-2 bg-green-600 text-white rounded font-bold"
+                            >
+                                {isSubmitting ? 'Mengirim...' : 'KIRIM JAWABAN'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
